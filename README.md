@@ -1,9 +1,9 @@
-# brain-structural-pipeline-sandbox
+# brain-structural-pipeline
 
 _TRANSIT CHD project brain slice-to-volume reconstruction and tissue segmentation pipeline for T2-weighted fetal and neonatal MRI_
 
 __run-brain-structural-pipeline-bash.sh__  
-Preliminary script to run TRANSIT CHD structural brain pipeline: preprocessing, SVR, BOUNTI and reporting. 
+Script to run TRANSIT CHD structural brain pipeline: preprocessing, SVR, BOUNTI and reporting. 
 
 Intended for use within automated SVRTK containe.  
 Example:
