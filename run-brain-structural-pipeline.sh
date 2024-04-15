@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -l
+#!/usr/bin/env bash
 
 #
 # distributed under the terms of the 
@@ -28,7 +28,7 @@ Run basic TRANSIT CHD structural brain pipeline: preprocessing, SVR, BOUNTI and 
 Requires directory with input files bound to /home/data/input, output directory bound to /home/data/output and temp directory bound to /home/tmp_proc. 
 
 Example container usage:
-  singularity exec --bind \$INPUT_DIR:/home/data/input,\$OUTPUT_DIR:/home/data/output,\$TEMP_DIR:/home/tmp_proc svrtk-auto.sif /bin/sh -c "/home/scripts/run-brain-structural-pipeline-bash.sh \$STACK_SLICE_THICKNESS"
+  singularity exec --bind \$INPUT_DIR:/home/data/input,\$OUTPUT_DIR:/home/data/output,\$TEMP_DIR:/home/tmp_proc svrtk-auto.sif /bin/sh -c "/home/scripts/run-brain-structural-pipeline.sh \$STACK_SLICE_THICKNESS"
 
 EOF
   exit
