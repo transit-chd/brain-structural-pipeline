@@ -87,6 +87,7 @@ STACK_DIR=$OUT_DIR/01_stacks
 SVR_DIR=$OUT_DIR/02_svr
 VOLUME_DIR=$OUT_DIR/03_volume
 SEG_DIR=$OUT_DIR/04_bounti
+VIEW_DIR=$OUT_DIR/view-result
 
 # Bias Correction on Input T2w SSFSE Stacks
 echo -e "\n\n=== 01 Bias Correction on T2w SSFSE Stacks =====================================\n\n"
@@ -141,6 +142,72 @@ echo -e "\n\n=== 04 Calculate Label Volumes ====================================
 set -x
 mirtk measure-volume $SEG_DIR/reo-SVR-output-brain-n4corr-hires-mask-brain_bounti-19.nii.gz > $SEG_DIR/measure-volume.txt
 { set +x; } 2>/dev/null
+
+# Create Slicer View File
+echo -e "\n\n=== 06 Creating Slicer View File =================================================\n\n"
+set -x
+mkdir $VIEW_DIR
+#copy files into folder and rename them
+#note that file names must match names in MRML file
+cp $SEG_DIR/reo-SVR-output-brain-n4corr-hires-mask-brain_bounti-19.nii.gz $VIEW_DIR
+mv $VIEW_DIR/reo-SVR-output-brain-n4corr-hires-mask-brain_bounti-19.nii.gz $VIEW_DIR/BOUNTI-SEG.nii.gz
+cp $VOLUME_DIR/reo-SVR-output-brain-n4corr-hires.nii.gz $VIEW_DIR
+mv $VIEW_DIR/reo-SVR-output-brain-n4corr-hires.nii.gz $VIEW_DIR/SVR-OUTPUT.nii.gz
+#Generate Slicer view
+cat > $VIEW_DIR/VIEW-RESULT.mrml << EOF
+
+<?xml version="1.0" encoding="UTF-8"?>
+<MRML version="Slicer 5.6.1 32438" userTags="">
+<Crosshair
+  id="vtkMRMLCrosshairNodedefault" name="Crosshair" hideFromEditors="true" selectable="true" selected="false" singletonTag="default" crosshairMode="NoCrosshair" crosshairBehavior="OffsetJumpSlice" crosshairThickness="Fine" crosshairRAS="0 0 0"></Crosshair>
+ <Selection
+  id="vtkMRMLSelectionNodeSingleton" name="Selection" hideFromEditors="true" selectable="true" selected="false" singletonTag="Singleton" references="ActiveVolume:vtkMRMLScalarVolumeNode2;unit/area:vtkMRMLUnitNodeApplicationArea;unit/frequency:vtkMRMLUnitNodeApplicationFrequency;unit/intensity:vtkMRMLUnitNodeApplicationIntensity;unit/length:vtkMRMLUnitNodeApplicationLength;unit/time:vtkMRMLUnitNodeApplicationTime;unit/velocity:vtkMRMLUnitNodeApplicationVelocity;unit/volume:vtkMRMLUnitNodeApplicationVolume;" ></Selection>
+ <Interaction
+  id="vtkMRMLInteractionNodeSingleton" name="Interaction" hideFromEditors="true" selectable="true" selected="false" singletonTag="Singleton" currentInteractionMode="ViewTransform" placeModePersistence="false" lastInteractionMode="ViewTransform" ></Interaction>
+ <View
+  id="vtkMRMLViewNode1" name="View1" hideFromEditors="false" selectable="true" selected="false" singletonTag="1" attributes="MappedInLayout:1" layoutLabel="1" layoutName="1" active="false" visibility="true" backgroundColor="0.756863 0.764706 0.909804" backgroundColor2="0.454902 0.470588 0.745098" layoutColor="0.454902 0.513725 0.913725" orientationMarkerType="none" orientationMarkerSize="medium" rulerType="none" rulerColor="white" AxisLabels="L;R;P;A;I;S" fieldOfView="200" letterSize="0.05" boxVisible="true" boxColor="1 0 1" fiducialsVisible="true" fiducialLabelsVisible="true" axisLabelsVisible="true" axisLabelsCameraDependent="true" animationMode="Off" viewAxisMode="LookFrom" spinDegrees="2" spinMs="5" spinDirection="YawLeft" rotateDegrees="5" rockLength="200" rockCount="0" stereoType="NoStereo" renderMode="Perspective" useDepthPeeling="1" gpuMemorySize="0" autoReleaseGraphicsResources="false" expectedFPS="8" volumeRenderingQuality="Normal" raycastTechnique="Composite" volumeRenderingSurfaceSmoothing="0" volumeRenderingOversamplingFactor="2" linkedControl="0" ></View>
+ <Slice
+  id="vtkMRMLSliceNodeRed" name="Red" hideFromEditors="false" selectable="true" selected="false" singletonTag="Red" attributes="MappedInLayout:1" layoutLabel="R" layoutName="Red" active="false" visibility="true" backgroundColor="0 0 0" backgroundColor2="0 0 0" layoutColor="0.952941 0.290196 0.2" orientationMarkerType="none" orientationMarkerSize="medium" rulerType="none" rulerColor="white" AxisLabels="L;R;P;A;I;S" fieldOfView="215.657 122.4 0.4" dimensions="592 336 1" xyzOrigin="0 0 0" sliceResolutionMode="1" uvwExtents="215.657 122.4 0.4" uvwDimensions="256 256 1" uvwOrigin="0 0 0" activeSlice="0" layoutGridRows="1" layoutGridColumns="1" sliceToRAS="-1 0 0 2.8 0 1 0 -1.2 0 0 1 4.2 0 0 0 1" orientationMatrixAxial="-1 0 0 0 1 0 0 0 1" orientationMatrixSagittal="0 0 -1 -1 0 0 0 1 0" orientationMatrixCoronal="-1 0 0 0 0 1 0 1 0" orientation="Axial" defaultOrientation="Axial" orientationReference="Axial" jumpMode="1" sliceVisibility="false" widgetVisibility="false" widgetOutlineVisibility="true" useLabelOutline="false" sliceSpacingMode="0" prescribedSliceSpacing="1 1 1" slabReconstructionEnabled="false" slabReconstructionType="Max" slabReconstructionThickness="1" slabReconstructionOversamplingFactor="2" ></Slice>
+ <Slice
+  id="vtkMRMLSliceNodeGreen" name="Green" hideFromEditors="false" selectable="true" selected="false" singletonTag="Green" attributes="MappedInLayout:1" layoutLabel="G" layoutName="Green" active="false" visibility="true" backgroundColor="0 0 0" backgroundColor2="0 0 0" layoutColor="0.431373 0.690196 0.294118" orientationMarkerType="none" orientationMarkerSize="medium" rulerType="none" rulerColor="white" AxisLabels="L;R;P;A;I;S" fieldOfView="187.467 106.4 0.4" dimensions="592 336 1" xyzOrigin="0 0 0" sliceResolutionMode="1" uvwExtents="187.467 106.4 0.4" uvwDimensions="256 256 1" uvwOrigin="0 0 0" activeSlice="0" layoutGridRows="1" layoutGridColumns="1" sliceToRAS="-1 0 0 2.8 0 0 1 -1 0 1 0 4 0 0 0 1" orientationMatrixAxial="-1 0 0 0 1 0 0 0 1" orientationMatrixSagittal="0 0 -1 -1 0 0 0 1 0" orientationMatrixCoronal="-1 0 0 0 0 1 0 1 0" orientation="Coronal" defaultOrientation="Coronal" orientationReference="Coronal" jumpMode="1" sliceVisibility="false" widgetVisibility="false" widgetOutlineVisibility="true" useLabelOutline="false" sliceSpacingMode="0" prescribedSliceSpacing="1 1 1" slabReconstructionEnabled="false" slabReconstructionType="Max" slabReconstructionThickness="1" slabReconstructionOversamplingFactor="2" ></Slice>
+ <Slice
+  id="vtkMRMLSliceNodeYellow" name="Yellow" hideFromEditors="false" selectable="true" selected="false" singletonTag="Yellow" attributes="MappedInLayout:1" layoutLabel="Y" layoutName="Yellow" active="false" visibility="true" backgroundColor="0 0 0" backgroundColor2="0 0 0" layoutColor="0.929412 0.835294 0.298039" orientationMarkerType="none" orientationMarkerSize="medium" rulerType="none" rulerColor="white" AxisLabels="L;R;P;A;I;S" fieldOfView="186.833 106.4 0.4" dimensions="590 336 1" xyzOrigin="0 0 0" sliceResolutionMode="1" uvwExtents="186.833 106.4 0.4" uvwDimensions="256 256 1" uvwOrigin="0 0 0" activeSlice="0" layoutGridRows="1" layoutGridColumns="1" sliceToRAS="0 0 -1 2.6 -1 0 0 -1.2 0 1 0 4 0 0 0 1" orientationMatrixAxial="-1 0 0 0 1 0 0 0 1" orientationMatrixSagittal="0 0 -1 -1 0 0 0 1 0" orientationMatrixCoronal="-1 0 0 0 0 1 0 1 0" orientation="Sagittal" defaultOrientation="Sagittal" orientationReference="Sagittal" jumpMode="1" sliceVisibility="false" widgetVisibility="false" widgetOutlineVisibility="true" useLabelOutline="false" sliceSpacingMode="0" prescribedSliceSpacing="1 1 1" slabReconstructionEnabled="false" slabReconstructionType="Max" slabReconstructionThickness="1" slabReconstructionOversamplingFactor="2" ></Slice>
+ <Layout
+  id="vtkMRMLLayoutNodevtkMRMLLayoutNode" name="Layout" hideFromEditors="true" selectable="true" selected="false" singletonTag="vtkMRMLLayoutNode" currentViewArrangement="3" guiPanelVisibility="1" bottomPanelVisibility ="1" guiPanelLR="0" collapseSliceControllers="0"
+ numberOfCompareViewRows="1" numberOfCompareViewColumns="1" numberOfLightboxRows="6" numberOfLightboxColumns="6" mainPanelSize="400" secondaryPanelSize="400" ></Layout>
+ <SliceComposite
+  id="vtkMRMLSliceCompositeNodeRed" name="SliceComposite" hideFromEditors="true" selectable="true" selected="false" singletonTag="Red" references="backgroundVolume:vtkMRMLScalarVolumeNode2;foregroundVolume:vtkMRMLScalarVolumeNode1;" compositing="0" foregroundOpacity="0.5" labelOpacity="1" linkedControl="0" hotLinkedControl="0" fiducialVisibility="1" fiducialLabelVisibility="1" layoutName="Red" doPropagateVolumeSelection="1" ></SliceComposite>
+ <SliceComposite
+  id="vtkMRMLSliceCompositeNodeGreen" name="SliceComposite_1" hideFromEditors="true" selectable="true" selected="false" singletonTag="Green" references="backgroundVolume:vtkMRMLScalarVolumeNode2;foregroundVolume:vtkMRMLScalarVolumeNode1;" compositing="0" foregroundOpacity="0.5" labelOpacity="1" linkedControl="0" hotLinkedControl="0" fiducialVisibility="1" fiducialLabelVisibility="1" layoutName="Green" doPropagateVolumeSelection="1" ></SliceComposite>
+ <SubjectHierarchy
+  id="vtkMRMLSubjectHierarchyNode1" name="SubjectHierarchy" hideFromEditors="false" selectable="true" selected="false" attributes="SubjectHierarchyVersion:2" >
+   <SubjectHierarchyItem id="3" name="Scene" parent="0" type="" expanded="true" attributes="Level^Scene|">
+     <SubjectHierarchyItem id="9" dataNode="vtkMRMLScalarVolumeNode1" parent="3" type="Volumes" expanded="true"></SubjectHierarchyItem>
+     <SubjectHierarchyItem id="12" dataNode="vtkMRMLScalarVolumeNode2" parent="3" type="Volumes" expanded="true"></SubjectHierarchyItem></SubjectHierarchyItem></SubjectHierarchy>
+ <SliceComposite
+  id="vtkMRMLSliceCompositeNodeYellow" name="SliceComposite_2" hideFromEditors="true" selectable="true" selected="false" singletonTag="Yellow" references="backgroundVolume:vtkMRMLScalarVolumeNode2;foregroundVolume:vtkMRMLScalarVolumeNode1;" compositing="0" foregroundOpacity="0.5" labelOpacity="1" linkedControl="0" hotLinkedControl="0" fiducialVisibility="1" fiducialLabelVisibility="1" layoutName="Yellow" doPropagateVolumeSelection="1" ></SliceComposite>
+ <Camera
+  id="vtkMRMLCameraNode1" name="Camera" description="Default Scene Camera" hideFromEditors="false" selectable="true" selected="false" singletonTag="1" userTags="" position="0 500 0" focalPoint="0 0 0" viewUp="0 0 1" parallelProjection="false" parallelScale="1" viewAngle="30" appliedTransform="1 0 0 0  0 1 0 0  0 0 1 0  0 0 0 1" ></Camera>
+ <ClipModels
+  id="vtkMRMLClipModelsNodevtkMRMLClipModelsNode" name="ClipModels" hideFromEditors="true" selectable="true" selected="false" singletonTag="vtkMRMLClipModelsNode" clipType="0" redSliceClipState="0" yellowSliceClipState="0" greenSliceClipState="0" ></ClipModels>
+ <ScriptedModule
+  id="vtkMRMLScriptedModuleNodeDataProbe" name="ScriptedModule" hideFromEditors="true" selectable="true" selected="false" singletonTag="DataProbe" ModuleName ="DataProbe" ></ScriptedModule>
+ <VolumeDisplay
+  id="vtkMRMLScalarVolumeDisplayNode1" name="VolumeDisplay" hideFromEditors="true" selectable="true" selected="false" color="0.9 0.9 0.3" edgeColor="0 0 0" selectedColor="1 0 0" selectedAmbient="0.4" ambient="0" diffuse="1" selectedSpecular="0.5" specular="0" power="1" metallic="0" roughness="0.5" opacity="1" sliceIntersectionOpacity="1" pointSize="1" lineWidth="1" representation="2" lighting="true" interpolation="1" shading="true" visibility="true" visibility2D="false" visibility3D="true" edgeVisibility="false" clipping="false" sliceIntersectionThickness="1" frontfaceCulling="false" backfaceCulling="false" scalarVisibility="false" vectorVisibility="false" tensorVisibility="false" interpolateTexture="false" scalarRangeFlag="UseData" scalarRange="0 100" colorNodeID="vtkMRMLColorTableNodeRandom" activeAttributeLocation="point" viewNodeRef="" folderDisplayOverrideAllowed="true" window="16.9998" level="8.49992" upperThreshold="32767" lowerThreshold="-32768" interpolate="0" autoWindowLevel="1" applyThreshold="0" autoThreshold="0" ></VolumeDisplay>
+ <VolumeArchetypeStorage
+  id="vtkMRMLVolumeArchetypeStorageNode4" name="VolumeArchetypeStorage_3" hideFromEditors="true" selectable="true" selected="false" fileName="BOUNTI-SEG.nii.gz" useCompression="1" defaultWriteFileExtension="nrrd" readState="0" writeState="0" centerImage="0" UseOrientationFromFile="1" ></VolumeArchetypeStorage>
+ <Volume
+  id="vtkMRMLScalarVolumeNode1" name="BOUNTI-SEG" hideFromEditors="false" selectable="true" selected="false" references="display:vtkMRMLScalarVolumeDisplayNode1;storage:vtkMRMLVolumeArchetypeStorageNode4;" userTags="" spacing="0.4 0.4 0.4" origin="55.4 -62.2 -49" voxelVectorType="undefined" ijkToRASDirections="-1   0   0 0   1   0 0 0 1 " ></Volume>
+ <VolumeDisplay
+  id="vtkMRMLScalarVolumeDisplayNode2" name="VolumeDisplay" hideFromEditors="true" selectable="true" selected="false" color="0.9 0.9 0.3" edgeColor="0 0 0" selectedColor="1 0 0" selectedAmbient="0.4" ambient="0" diffuse="1" selectedSpecular="0.5" specular="0" power="1" metallic="0" roughness="0.5" opacity="1" sliceIntersectionOpacity="1" pointSize="1" lineWidth="1" representation="2" lighting="true" interpolation="1" shading="true" visibility="true" visibility2D="false" visibility3D="true" edgeVisibility="false" clipping="false" sliceIntersectionThickness="1" frontfaceCulling="false" backfaceCulling="false" scalarVisibility="false" vectorVisibility="false" tensorVisibility="false" interpolateTexture="false" scalarRangeFlag="UseData" scalarRange="0 100" colorNodeID="vtkMRMLColorTableNodeGrey" activeAttributeLocation="point" viewNodeRef="" folderDisplayOverrideAllowed="true" window="1369.59" level="627.309" upperThreshold="32767" lowerThreshold="-32768" interpolate="1" autoWindowLevel="1" applyThreshold="0" autoThreshold="0" ></VolumeDisplay>
+ <VolumeArchetypeStorage
+  id="vtkMRMLVolumeArchetypeStorageNode2" name="VolumeArchetypeStorage_3" hideFromEditors="true" selectable="true" selected="false" fileName="SVR-OUTPUT.nii.gz" useCompression="1" defaultWriteFileExtension="nrrd" readState="0" writeState="0" centerImage="0" UseOrientationFromFile="1" ></VolumeArchetypeStorage>
+ <Volume
+  id="vtkMRMLScalarVolumeNode2" name="SVR-OUTPUT" hideFromEditors="false" selectable="true" selected="false" references="display:vtkMRMLScalarVolumeDisplayNode2;storage:vtkMRMLVolumeArchetypeStorageNode2;" userTags="" spacing="0.4 0.4 0.4" origin="55.4 -62.2 -49" voxelVectorType="undefined" ijkToRASDirections="-1   0   0 0   1   0 0 0 1 " ></Volume>
+</MRML>
+
+
+EOF
 
 # Set File Permissions
 chmod 0775 -R $OUT_DIR
