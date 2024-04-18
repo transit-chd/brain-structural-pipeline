@@ -138,7 +138,7 @@ bash /home/auto-proc-svrtk/scripts/auto-brain-bounti-segmentation-fetal.sh $SEG_
 { set +x; } 2>/dev/null
 
 # Calculate Label Volumes
-echo -e "\n\n=== 05 Calculate Label Volumes =================================================\n\n"
+echo -e "\n\n=== 04 Calculate Label Volumes =================================================\n\n"
 set -x
 mirtk measure-volume $SEG_DIR/reo-SVR-output-brain-n4corr-hires-mask-brain_bounti-19.nii.gz > $SEG_DIR/measure-volume.txt
 { set +x; } 2>/dev/null
