@@ -34,6 +34,18 @@ EOF
   exit
 }
 
+# Set Defaults
+SVR_MOCO_MODE=0  # motion correction mode (see auto-brain-reconstruction.sh)
+SVR_OUT_RES=0.8  # spatial resolution of reconstructed volume 
+SVR_NUM_PKG=1    # number of packages (see auto-brain-reconstruction.sh)
+
+# Parse Inputs
+if [ $# -ne 1 ] ; then
+  usage
+else 
+  STACK_SLICE_THICKNESS=$1  
+fi
+
 # Set Bind Paths
 IN_DIR=/home/data/input
 OUT_DIR=/home/data/output
@@ -64,18 +76,6 @@ if [[ ! -d ${TMP_DIR} ]];then
 	echo "ERROR: NO TEMP FOLDER FOUND !!!!"
   exit
 fi
-
-# Parse Inputs
-if [ $# -ne 1 ] ; then
-  usage
-else 
-  STACK_SLICE_THICKNESS=$1  
-fi
-
-# Set Defaults
-SVR_MOCO_MODE=0  # motion correction mode (see auto-brain-reconstruction.sh)
-SVR_OUT_RES=0.8  # spatial resolution of reconstructed volume 
-SVR_NUM_PKG=1    # number of packages (see auto-brain-reconstruction.sh)
 
 # List Parameters
 echo -e "\n\n=== TRANSIT CHD Brain Structural Pipeline (Basic) ==============================\n\n"
