@@ -22,5 +22,5 @@ __NOTE:__ Current implementation
 
 Example using Singularity container image (transit-svrtk-auto.sif):
 ```shell
-singularity exec --bind $INPUT_DIR:/home/data/input,$OUTPUT_DIR:/home/data/output,$TEMP_DIR:/home/tmp_proc transit-svrtk-auto.sif /bin/sh -c "/home/scripts/run-brain-structural-pipeline-bash.sh $STACK_SLICE_THICKNESS"
+singularity exec --bind $INPUT_DIR:/home/data/input,$OUTPUT_DIR:/home/data/output,$TEMP_DIR:/home/tmp_proc transit-svrtk-auto.sif /bin/sh -c "/home/scripts/run-brain-structural-pipeline-bash.sh --stackslicethickness  $STACK_SLICE_THICKNESS"
 ```
