@@ -21,7 +21,7 @@ set -Eeuo pipefail
 # Usage
 usage() {
   cat << EOF # remove the space between << and EOF, this is due to web plugin issue
-Usage: $(basename "${BASH_SOURCE[0]}") --stackslicethickness 
+Usage: $(basename "${BASH_SOURCE[0]}") [-h] --stackslicethickness thickness_value
 
 Run basic TRANSIT CHD structural brain pipeline: preprocessing, SVR, BOUNTI and reporting 
 
