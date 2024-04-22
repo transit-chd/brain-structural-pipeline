@@ -21,14 +21,19 @@ set -Eeuo pipefail
 # Usage
 usage() {
   cat << EOF # remove the space between << and EOF, this is due to web plugin issue
-Usage: $(basename "${BASH_SOURCE[0]}") TBD
+Usage: $(basename "${BASH_SOURCE[0]}") --stackslicethickness 
 
 Run basic TRANSIT CHD structural brain pipeline: preprocessing, SVR, BOUNTI and reporting 
+
+Available options:
+
+-h, --help            Print this help and exit
+--stackslicethickness Slice thickness of input stacks in millimeters
 
 Requires directory with input files bound to /home/data/input, output directory bound to /home/data/output and temp directory bound to /home/tmp_proc. 
 
 Example container usage:
-  singularity exec --bind \$INPUT_DIR:/home/data/input,\$OUTPUT_DIR:/home/data/output,\$TEMP_DIR:/home/tmp_proc svrtk-auto.sif /bin/sh -c "/home/scripts/run-brain-structural-pipeline.sh \$STACK_SLICE_THICKNESS"
+  singularity exec --bind \$INPUT_DIR:/home/data/input,\$OUTPUT_DIR:/home/data/output,\$TEMP_DIR:/home/tmp_proc svrtk-auto.sif /bin/sh -c "/home/scripts/run-brain-structural-pipeline.sh --stackslicethickness \$STACK_SLICE_THICKNESS"
 
 EOF
   exit
@@ -40,11 +45,22 @@ SVR_OUT_RES=0.8  # spatial resolution of reconstructed volume
 SVR_NUM_PKG=1    # number of packages (see auto-brain-reconstruction.sh)
 
 # Parse Inputs
-if [ $# -ne 1 ] ; then
+if [ $# -eq 0 ] ; then
   usage
-else 
-  STACK_SLICE_THICKNESS=$1  
 fi
+while :; do
+  case "${1-}" in
+  -h | --help) usage ;;
+  --stackslicethickness) 
+    STACK_SLICE_THICKNESS="${2-}"  # slice thickness of input stacks (in mm)
+    shift
+    ;;
+  -?*) echo "Unknown option: $1" && exit;;
+  *) break ;;
+  esac
+  shift
+done
+[[ -z "${STACK_SLICE_THICKNESS-}" ]] && echo "--stackslicethickness not specified" && exit; # check required parameter
 
 # Set Bind Paths
 IN_DIR=/home/data/input
