@@ -155,7 +155,6 @@ cp $VOLUME_DIR/reo-SVR-output-brain-n4corr-hires.nii.gz $VIEW_DIR
 mv $VIEW_DIR/reo-SVR-output-brain-n4corr-hires.nii.gz $VIEW_DIR/SVR-OUTPUT.nii.gz
 #Generate Slicer view
 cat > $VIEW_DIR/VIEW-RESULT.mrml << EOF
-
 <?xml version="1.0" encoding="UTF-8"?>
 <MRML version="Slicer 5.6.1 32438" userTags="">
 <Crosshair
