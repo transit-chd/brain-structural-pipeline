@@ -87,7 +87,6 @@ STACK_DIR=$OUT_DIR/01_stacks
 SVR_DIR=$OUT_DIR/02_svr
 VOLUME_DIR=$OUT_DIR/03_volume
 SEG_DIR=$OUT_DIR/04_bounti
-VIEW_DIR=$OUT_DIR/view-result
 
 # Bias Correction on Input T2w SSFSE Stacks
 echo -e "\n\n=== 01 Bias Correction on T2w SSFSE Stacks =====================================\n\n"
@@ -144,17 +143,10 @@ mirtk measure-volume $SEG_DIR/reo-SVR-output-brain-n4corr-hires-mask-brain_bount
 { set +x; } 2>/dev/null
 
 # Create Slicer View File
-echo -e "\n\n=== 06 Creating Slicer View File =================================================\n\n"
+echo -e "\n\n=== 04 Creating Slicer Scene File ==============================================\n\n"
 set -x
-mkdir $VIEW_DIR
-#copy files into folder and rename them
-#note that file names must match names in MRML file
-cp $SEG_DIR/reo-SVR-output-brain-n4corr-hires-mask-brain_bounti-19.nii.gz $VIEW_DIR
-mv $VIEW_DIR/reo-SVR-output-brain-n4corr-hires-mask-brain_bounti-19.nii.gz $VIEW_DIR/BOUNTI-SEG.nii.gz
-cp $VOLUME_DIR/reo-SVR-output-brain-n4corr-hires.nii.gz $VIEW_DIR
-mv $VIEW_DIR/reo-SVR-output-brain-n4corr-hires.nii.gz $VIEW_DIR/SVR-OUTPUT.nii.gz
 #Generate Slicer view
-cat > $VIEW_DIR/VIEW-RESULT.mrml << EOF
+cat > $SEG_DIR/segmentation-scene.mrml << EOF
 <?xml version="1.0" encoding="UTF-8"?>
 <MRML version="Slicer 5.6.1 32438" userTags="">
 <Crosshair
@@ -194,19 +186,18 @@ cat > $VIEW_DIR/VIEW-RESULT.mrml << EOF
  <VolumeDisplay
   id="vtkMRMLScalarVolumeDisplayNode1" name="VolumeDisplay" hideFromEditors="true" selectable="true" selected="false" color="0.9 0.9 0.3" edgeColor="0 0 0" selectedColor="1 0 0" selectedAmbient="0.4" ambient="0" diffuse="1" selectedSpecular="0.5" specular="0" power="1" metallic="0" roughness="0.5" opacity="1" sliceIntersectionOpacity="1" pointSize="1" lineWidth="1" representation="2" lighting="true" interpolation="1" shading="true" visibility="true" visibility2D="false" visibility3D="true" edgeVisibility="false" clipping="false" sliceIntersectionThickness="1" frontfaceCulling="false" backfaceCulling="false" scalarVisibility="false" vectorVisibility="false" tensorVisibility="false" interpolateTexture="false" scalarRangeFlag="UseData" scalarRange="0 100" colorNodeID="vtkMRMLColorTableNodeRandom" activeAttributeLocation="point" viewNodeRef="" folderDisplayOverrideAllowed="true" window="16.9998" level="8.49992" upperThreshold="32767" lowerThreshold="-32768" interpolate="0" autoWindowLevel="1" applyThreshold="0" autoThreshold="0" ></VolumeDisplay>
  <VolumeArchetypeStorage
-  id="vtkMRMLVolumeArchetypeStorageNode4" name="VolumeArchetypeStorage_3" hideFromEditors="true" selectable="true" selected="false" fileName="BOUNTI-SEG.nii.gz" useCompression="1" defaultWriteFileExtension="nrrd" readState="0" writeState="0" centerImage="0" UseOrientationFromFile="1" ></VolumeArchetypeStorage>
+  id="vtkMRMLVolumeArchetypeStorageNode4" name="VolumeArchetypeStorage_3" hideFromEditors="true" selectable="true" selected="false" fileName="reo-SVR-output-brain-n4corr-hires-mask-brain_bounti-19.nii.gz" useCompression="1" defaultWriteFileExtension="nrrd" readState="0" writeState="0" centerImage="0" UseOrientationFromFile="1" ></VolumeArchetypeStorage>
  <Volume
-  id="vtkMRMLScalarVolumeNode1" name="BOUNTI-SEG" hideFromEditors="false" selectable="true" selected="false" references="display:vtkMRMLScalarVolumeDisplayNode1;storage:vtkMRMLVolumeArchetypeStorageNode4;" userTags="" spacing="0.4 0.4 0.4" origin="55.4 -62.2 -49" voxelVectorType="undefined" ijkToRASDirections="-1   0   0 0   1   0 0 0 1 " ></Volume>
+  id="vtkMRMLScalarVolumeNode1" name="reo-SVR-output-brain-n4corr-hires-mask-brain_bounti-19" hideFromEditors="false" selectable="true" selected="false" references="display:vtkMRMLScalarVolumeDisplayNode1;storage:vtkMRMLVolumeArchetypeStorageNode4;" userTags="" spacing="0.4 0.4 0.4" origin="55.4 -62.2 -49" voxelVectorType="undefined" ijkToRASDirections="-1   0   0 0   1   0 0 0 1 " ></Volume>
  <VolumeDisplay
   id="vtkMRMLScalarVolumeDisplayNode2" name="VolumeDisplay" hideFromEditors="true" selectable="true" selected="false" color="0.9 0.9 0.3" edgeColor="0 0 0" selectedColor="1 0 0" selectedAmbient="0.4" ambient="0" diffuse="1" selectedSpecular="0.5" specular="0" power="1" metallic="0" roughness="0.5" opacity="1" sliceIntersectionOpacity="1" pointSize="1" lineWidth="1" representation="2" lighting="true" interpolation="1" shading="true" visibility="true" visibility2D="false" visibility3D="true" edgeVisibility="false" clipping="false" sliceIntersectionThickness="1" frontfaceCulling="false" backfaceCulling="false" scalarVisibility="false" vectorVisibility="false" tensorVisibility="false" interpolateTexture="false" scalarRangeFlag="UseData" scalarRange="0 100" colorNodeID="vtkMRMLColorTableNodeGrey" activeAttributeLocation="point" viewNodeRef="" folderDisplayOverrideAllowed="true" window="1369.59" level="627.309" upperThreshold="32767" lowerThreshold="-32768" interpolate="1" autoWindowLevel="1" applyThreshold="0" autoThreshold="0" ></VolumeDisplay>
  <VolumeArchetypeStorage
-  id="vtkMRMLVolumeArchetypeStorageNode2" name="VolumeArchetypeStorage_3" hideFromEditors="true" selectable="true" selected="false" fileName="SVR-OUTPUT.nii.gz" useCompression="1" defaultWriteFileExtension="nrrd" readState="0" writeState="0" centerImage="0" UseOrientationFromFile="1" ></VolumeArchetypeStorage>
+  id="vtkMRMLVolumeArchetypeStorageNode2" name="VolumeArchetypeStorage_3" hideFromEditors="true" selectable="true" selected="false" fileName="reo-SVR-output-brain-n4corr-hires.nii.gz" useCompression="1" defaultWriteFileExtension="nrrd" readState="0" writeState="0" centerImage="0" UseOrientationFromFile="1" ></VolumeArchetypeStorage>
  <Volume
-  id="vtkMRMLScalarVolumeNode2" name="SVR-OUTPUT" hideFromEditors="false" selectable="true" selected="false" references="display:vtkMRMLScalarVolumeDisplayNode2;storage:vtkMRMLVolumeArchetypeStorageNode2;" userTags="" spacing="0.4 0.4 0.4" origin="55.4 -62.2 -49" voxelVectorType="undefined" ijkToRASDirections="-1   0   0 0   1   0 0 0 1 " ></Volume>
+  id="vtkMRMLScalarVolumeNode2" name="reo-SVR-output-brain-n4corr-hires" hideFromEditors="false" selectable="true" selected="false" references="display:vtkMRMLScalarVolumeDisplayNode2;storage:vtkMRMLVolumeArchetypeStorageNode2;" userTags="" spacing="0.4 0.4 0.4" origin="55.4 -62.2 -49" voxelVectorType="undefined" ijkToRASDirections="-1   0   0 0   1   0 0 0 1 " ></Volume>
 </MRML>
-
-
 EOF
+{ set +x; } 2>/dev/null
 
 # Set File Permissions
 chmod 0775 -R $OUT_DIR
