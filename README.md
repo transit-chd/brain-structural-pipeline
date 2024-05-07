@@ -5,7 +5,7 @@ _TRANSIT CHD project brain slice-to-volume reconstruction and tissue segmentatio
 __run-brain-structural-pipeline-bash.sh__  
 Script to run TRANSIT CHD structural brain pipeline: preprocessing, SVR, BOUNTI and reporting. 
 
-Intended for use within automated SVRTK containe.  
+Intended for use within automated SVRTK container.  
 Example:
 ```dockerfile
 # Dockerfile 
