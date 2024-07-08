@@ -156,6 +156,61 @@ bash /home/auto-proc-svrtk/scripts/auto-brain-bounti-segmentation-fetal.sh $SEG_
 echo -e "\n\n=== 04 Calculate Label Volumes =================================================\n\n"
 set -x
 mirtk measure-volume $SEG_DIR/reo-SVR-output-brain-n4corr-hires-mask-brain_bounti-19.nii.gz > $SEG_DIR/measure-volume.txt
+input_volumes="$SEG_DIR/measure-volume.txt"
+output_volumes="calc-volumes.txt"
+# Read the file and extract integers into an indexed array
+declare -a orderedVals=(0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)
+mapfile -t inLabels < <(awk '{print $1}' "$input_volumes")
+mapfile -t inVals < <(awk '{print $2}' "$input_volumes")
+# Order values in array
+for i in $(seq 0 18);
+do
+    X=${inLabels[$i]}-1
+    orderedVals[$X]=${inVals[$i]}
+done
+# Values
+# Cortical grey matter
+cGML=${orderedVals[2]}
+cGMR=${orderedVals[3]}
+# White matter
+WML=${orderedVals[4]}
+WMR=${orderedVals[5]}
+# Deep gray matter
+THALL=${orderedVals[15]}
+THALR=${orderedVals[16]}
+GANGL=${orderedVals[13]}
+GANGR=${orderedVals[14]}
+# Cerebellum
+CERL=${orderedVals[10]}
+CERR=${orderedVals[11]}
+CERV=${orderedVals[12]}
+# Cerebrospinal fluid
+ECSFL=${orderedVals[0]}
+ECSFR=${orderedVals[1]}
+LVENTL=${orderedVals[6]}
+LVENTR=${orderedVals[7]}
+CAV=${orderedVals[8]}
+TVENT=${orderedVals[17]}
+FVENT=${orderedVals[18]}
+# Total brain volume
+STEM=${orderedVals[9]}
+# Calculate volumes
+cGM=$(awk "BEGIN {print $cGML + $cGMR}")
+WM=$(awk "BEGIN {print $WML + $WMR}")
+dGM=$(awk "BEGIN {print $THALL + $THALR + $GANGL + $GANGR}")
+CER=$(awk "BEGIN {print $CERL + $CERR + $CERV}")
+CSF=$(awk "BEGIN {print $ECSFL + $ECSFR + $LVENTL + $LVENTR + $CAV + $TVENT + $FVENT}")
+TBV=$(awk "BEGIN {print $cGM + $WM + $dGM + $CER + $STEM}")
+# Print to calc-volumes.txt
+{
+    echo "cGM $cGM"
+    echo "WM $WM"
+    echo "dGM $dGM"
+    echo "CER $CER"
+    echo "CSF $CSF"
+    echo "TBV $TBV"
+} > "$SEG_DIR/$output_volumes"
+
 { set +x; } 2>/dev/null
 
 # Create Slicer Scene File
