@@ -195,12 +195,12 @@ FVENT=${orderedVals[18]}
 # Total brain volume
 STEM=${orderedVals[9]}
 # Calculate volumes
-cGM=$(awk "BEGIN {print $cGML + $cGMR}")
-WM=$(awk "BEGIN {print $WML + $WMR}")
-dGM=$(awk "BEGIN {print $THALL + $THALR + $GANGL + $GANGR}")
-CER=$(awk "BEGIN {print $CERL + $CERR + $CERV}")
-CSF=$(awk "BEGIN {print $ECSFL + $ECSFR + $LVENTL + $LVENTR + $CAV + $TVENT + $FVENT}")
-TBV=$(awk "BEGIN {print $cGM + $WM + $dGM + $CER + $STEM}")
+cGM=$(echo "$cGML + $cGMR" | bc)
+WM=$(echo "$WML + $WMR" | bc)
+dGM=$(echo "$THALL + $THALR + $GANGL + $GANGR" | bc)
+CER=$(echo "$CERL + $CERR + $CERV" | bc)
+CSF=$(echo "$ECSFL + $ECSFR + $LVENTL + $LVENTR + $CAV + $TVENT + $FVENT" | bc)
+TBV=$(echo "$cGM + $WM + $dGM + $CER + $STEM" | bc)
 # Print to calc-volumes.txt
 {
     echo "cGM $cGM"
@@ -284,6 +284,8 @@ EOF
 
 # Set File Permissions
 chmod 0775 -R $OUT_DIR
+
+mv ./slurm-$SLURM_JOBID.out /hpf/projects/cmacgowan/jcosma/4DCardiac/$CASE/SLURM/1-MATLAB-Preproc-i-$SLURM_JOBID.out
 
 # End
 echo -e "\n\n=== TRANSIT CHD Brain Structural Pipeline (Basic) Complete =====================\n\n"
