@@ -285,7 +285,5 @@ EOF
 # Set File Permissions
 chmod 0775 -R $OUT_DIR
 
-mv ./slurm-$SLURM_JOBID.out /hpf/projects/cmacgowan/jcosma/4DCardiac/$CASE/SLURM/1-MATLAB-Preproc-i-$SLURM_JOBID.out
-
 # End
 echo -e "\n\n=== TRANSIT CHD Brain Structural Pipeline (Basic) Complete =====================\n\n"
