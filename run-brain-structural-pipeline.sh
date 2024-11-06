@@ -155,13 +155,14 @@ bash /home/auto-proc-svrtk/scripts/auto-brain-bounti-segmentation-fetal.sh $SEG_
 # Calculate Label Volumes
 echo -e "\n\n=== 04 Calculate Label Volumes =================================================\n\n"
 set -x
-mirtk measure-volume $SEG_DIR/reo-SVR-output-brain-n4corr-hires-mask-brain_bounti-19.nii.gz > $SEG_DIR/measure-volume.txt
-input_volumes="$SEG_DIR/measure-volume.txt"
-output_volumes="calc-volumes.txt"
+filename_volume_labels="volume-labels.txt"
+filename_volume_regions="volume-regions.txt"
+mirtk measure-volume $SEG_DIR/reo-SVR-output-brain-n4corr-hires-mask-brain_bounti-19.nii.gz > $SEG_DIR/$filename_volume_labels
+{ set +x; } 2>/dev/null
 # Read the file and extract integers into an indexed array
 declare -a orderedVals=(0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0)
-mapfile -t inLabels < <(awk '{print $1}' "$input_volumes")
-mapfile -t inVals < <(awk '{print $2}' "$input_volumes")
+mapfile -t inLabels < <(awk '{print $1}' "$SEG_DIR/$filename_volume_labels")
+mapfile -t inVals < <(awk '{print $2}' "$SEG_DIR/$filename_volume_labels")
 # Order values in array
 for i in $(seq 0 18);
 do
@@ -192,25 +193,50 @@ LVENTR=${orderedVals[7]}
 CAV=${orderedVals[8]}
 TVENT=${orderedVals[17]}
 FVENT=${orderedVals[18]}
-# Total brain volume
+# Brainstem
 STEM=${orderedVals[9]}
 # Calculate volumes
-cGM=$(echo "$cGML + $cGMR" | bc)
-WM=$(echo "$WML + $WMR" | bc)
-dGM=$(echo "$THALL + $THALR + $GANGL + $GANGR" | bc)
-CER=$(echo "$CERL + $CERR + $CERV" | bc)
-CSF=$(echo "$ECSFL + $ECSFR + $LVENTL + $LVENTR + $CAV + $TVENT + $FVENT" | bc)
-TBV=$(echo "$cGM + $WM + $dGM + $CER + $STEM" | bc)
-# Print to calc-volumes.txt
+cGM=$(echo "$cGML + $cGMR" | bc)  # cortical gray matter
+WM=$(echo "$WML + $WMR" | bc)  # white matter
+dGM=$(echo "$THALL + $THALR + $GANGL + $GANGR" | bc)  # deep gray matter
+CER=$(echo "$CERL + $CERR + $CERV" | bc)  # cerebellum
+LVENT=$(echo "$LVENTL + $LVENTR" | bc)  # lateral ventricles
+TFVENT=$(echo "$TVENT + $FVENT" | bc)  # third & fourth ventricles
+ECSF=$(echo "$ECSFL + $ECSFR" | bc)  # external CSF
+TCSF=$(echo "$ECSFL + $ECSFR + $LVENTL + $LVENTR + $CAV + $TVENT + $FVENT" | bc)  # total CSF
+TBV=$(echo "$cGM + $WM + $dGM + $CER + $STEM" | bc)  # total brain volume
+# Print to file
+set -x
 {
+    echo "01_eCSF_L $ECSFL"
+    echo "02_eCSF_R $ECSFR"
+    echo "03_Cortical_GM_L $cGML"
+    echo "04_Cortical_GM_R $cGMR"
+    echo "05_Fetal_WM_L $WML"
+    echo "06_Fetal_WM_R $WMR"
+    echo "07_Lateral_Ventricle_L $LVENTL"
+    echo "08_Lateral_Ventricle_R $LVENTR"
+    echo "09_Cavum_Septum_Pellucidum $CAV"
+    echo "10_Brainstem $STEM"
+    echo "11_Cerebellum_L $CERL"
+    echo "12_Cerebellum_R $CERR"
+    echo "13_Cerebellar_Vermis $CERV"
+    echo "14_Basal_Ganglia_L $GANGL"
+    echo "15_Basal_Ganglia_R $GANGR"
+    echo "16_Thalamus_L $THALL"
+    echo "17_Thalamus_R $THALR"
+    echo "18_Third_Ventricle $TVENT"
+    echo "19_Fourth_Ventricle $FVENT"
+    echo "ECSF $ECSF"
     echo "cGM $cGM"
     echo "WM $WM"
-    echo "dGM $dGM"
+    echo "LVENT $LVENT"
     echo "CER $CER"
-    echo "CSF $CSF"
+    echo "dGM $dGM"
+    echo "TFVENT $TFVENT"
+    echo "TCSF $TCSF"
     echo "TBV $TBV"
-} > "$SEG_DIR/$output_volumes"
-
+} > "$SEG_DIR/$filename_volume_regions"
 { set +x; } 2>/dev/null
 
 # Create Slicer Scene File
