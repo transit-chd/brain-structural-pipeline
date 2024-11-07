@@ -41,8 +41,9 @@ EOF
 
 # Set Defaults
 SVR_MOCO_MODE=0  # motion correction mode (see auto-brain-reconstruction.sh)
-SVR_OUT_RES=0.8  # spatial resolution of reconstructed volume 
 SVR_NUM_PKG=1    # number of packages (see auto-brain-reconstruction.sh)
+SVR_VOL_RES=0.5  # spatial resolution of SVR volume 
+SEG_VOL_RES=0.5  # spatial resolution of volume used for segmentation
 
 # Parse Inputs
 if [ $# -eq 0 ] ; then
@@ -122,7 +123,7 @@ done
 echo -e "\n\n=== 02 SVR =====================================================================\n\n"
 mkdir $SVR_DIR
 set -x
-bash /home/auto-proc-svrtk/scripts/auto-brain-reconstruction.sh $STACK_DIR $SVR_DIR $SVR_MOCO_MODE $STACK_SLICE_THICKNESS $SVR_OUT_RES $SVR_NUM_PKG
+bash /home/auto-proc-svrtk/scripts/auto-brain-reconstruction.sh $STACK_DIR $SVR_DIR $SVR_MOCO_MODE $STACK_SLICE_THICKNESS $SVR_VOL_RES $SVR_NUM_PKG
 { set +x; } 2>/dev/null
 
 # Bias Correction on Reconstructed T2w Volume
@@ -137,12 +138,20 @@ mirtk close-image $VOLUME_DIR/mask.nii.gz $VOLUME_DIR/mask.nii.gz -iterations 4
 mirtk N4 3 -i $SVR_DIR/reo-SVR-output-brain.nii.gz -x $VOLUME_DIR/mask.nii.gz -o "[$VOLUME_DIR/reo-SVR-output-brain-n4corr.nii.gz,$VOLUME_DIR/reo-SVR-output-brain-bias.nii.gz]" -c "[50x50x50,0.001]" -s 2 -b "[100,3]" -t "[0.15,0.01,200]" 
 { set +x; } 2>/dev/null
 
-# Resample T2w Volume to Higher Resolution
-echo -e "\n\n=== 03 Resample T2w Volume to Higher Resolution ================================\n\n"
-set -x
-mirtk resample-image $VOLUME_DIR/reo-SVR-output-brain-n4corr.nii.gz $VOLUME_DIR/reo-SVR-output-brain-n4corr-hires.nii.gz -isotropic 0.5 -interp Sinc
-mirtk nan $VOLUME_DIR/reo-SVR-output-brain-n4corr-hires.nii.gz 1000000 # replace negative values with zero
-{ set +x; } 2>/dev/null
+# Resample T2w Volume to Target Resolution for Segmentation
+echo -e "\n\n=== 03 Resample T2w Volume to Target Resolution for Segmentation ===============\n\n"
+if [[ $SEG_VOL_RES == "$SVR_VOL_RES" ]];then
+  set -x
+  # T2w volume is already resolution required for segmentation
+  cp $VOLUME_DIR/reo-SVR-output-brain-n4corr.nii.gz $VOLUME_DIR/reo-SVR-output-brain-n4corr-hires.nii.gz
+  { set +x; } 2>/dev/null  
+else 
+  # Resampling T2w volume to resolution required for segmentation
+  set -x
+  mirtk resample-image $VOLUME_DIR/reo-SVR-output-brain-n4corr.nii.gz $VOLUME_DIR/reo-SVR-output-brain-n4corr-hires.nii.gz -isotropic 0.5 -interp Sinc
+  mirtk nan $VOLUME_DIR/reo-SVR-output-brain-n4corr-hires.nii.gz 1000000 # replace negative values with zero
+  { set +x; } 2>/dev/null
+fi
 
 # BOUNTI Segmentation
 echo -e "\n\n=== 04 BOUNTI Segmentation =====================================================\n\n"
