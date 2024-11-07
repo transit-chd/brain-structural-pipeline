@@ -94,6 +94,10 @@ if [[ ! -d ${TMP_DIR} ]];then
   exit
 fi
 
+# Log to File
+LOG_FILE=$OUT_DIR/pipeline.log
+{ 
+
 # List Parameters
 echo -e "\n\n=== TRANSIT CHD Brain Structural Pipeline (Basic) ==============================\n\n"
 echo " - number of stacks : " $NUM_STACKS
@@ -241,3 +245,6 @@ chmod 0775 -R $OUT_DIR
 
 # End
 echo -e "\n\n=== TRANSIT CHD Brain Structural Pipeline (Basic) Complete =====================\n\n"
+
+# Split Standard Output and Error to Log File
+} 2>&1 | tee -a "$LOG_FILE"
