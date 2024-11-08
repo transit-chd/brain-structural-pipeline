@@ -21,19 +21,19 @@ set -Eeuo pipefail
 # Usage
 usage() {
   cat << EOF # remove the space between << and EOF, this is due to web plugin issue
-Usage: $(basename "${BASH_SOURCE[0]}") [-h] --stackslicethickness thickness_value
+Usage: $(basename "${BASH_SOURCE[0]}") [-h] [--stackslicethickness thickness_value]
 
 Run basic TRANSIT CHD structural brain pipeline: preprocessing, SVR, BOUNTI and reporting 
 
 Available options:
 
 -h, --help            Print this help and exit
---stackslicethickness Slice thickness of input stacks in millimeters
+--stackslicethickness Default slice thickness of input stacks in millimeters
 
 Requires directory with input files bound to /home/data/input, output directory bound to /home/data/output and temp directory bound to /home/tmp_proc. 
 
 Example container usage:
-  singularity exec --bind \$INPUT_DIR:/home/data/input,\$OUTPUT_DIR:/home/data/output,\$TEMP_DIR:/home/tmp_proc svrtk-auto.sif /bin/sh -c "/home/scripts/run-brain-structural-pipeline.sh --stackslicethickness \$STACK_SLICE_THICKNESS"
+  singularity exec --bind \$INPUT_DIR:/home/data/input,\$OUTPUT_DIR:/home/data/output,\$TEMP_DIR:/home/tmp_proc svrtk-auto.sif /bin/sh -c "/home/scripts/run-brain-structural-pipeline.sh"
 
 EOF
   exit
@@ -44,16 +44,14 @@ SVR_MOCO_MODE=0  # motion correction mode (see auto-brain-reconstruction.sh)
 SVR_NUM_PKG=1    # number of packages (see auto-brain-reconstruction.sh)
 SVR_VOL_RES=0.5  # spatial resolution of SVR volume 
 SEG_VOL_RES=0.5  # spatial resolution of volume used for segmentation
+DEFAULT_STACK_SLICE_THICKNESS=0  # slice thickness of input stacks in millimeters
 
 # Parse Inputs
-if [ $# -eq 0 ] ; then
-  usage
-fi
 while :; do
   case "${1-}" in
   -h | --help) usage ;;
   --stackslicethickness) 
-    STACK_SLICE_THICKNESS="${2-}"  # slice thickness of input stacks (in mm)
+    DEFAULT_STACK_SLICE_THICKNESS="${2-}"  # slice thickness of input stacks (in mm)
     shift
     ;;
   -?*) echo "Unknown option: $1" && exit;;
@@ -61,7 +59,6 @@ while :; do
   esac
   shift
 done
-[[ -z "${STACK_SLICE_THICKNESS-}" ]] && echo "--stackslicethickness not specified" && exit; # check required parameter
 
 # Set Bind Paths
 IN_DIR=/home/data/input
@@ -70,38 +67,61 @@ TMP_DIR=/home/tmp_proc
 
 # Validate Bind Paths
 if [[ ! -d ${IN_DIR} ]];then
-	echo "ERROR: NO FOLDER WITH THE INPUT FILES FOUND !!!!" 
-  exit
+  printf "ERROR: NO FOLDER WITH THE INPUT FILES FOUND !!!!\n\n"
+  usage
 else
   NUM_STACKS=$(find ${IN_DIR}/ -name "*.nii*" | wc -l)
   if [ $NUM_STACKS -eq 0 ];then
-    echo "ERROR: NO INPUT .nii / .nii.gz FILES FOUND !!!!"
-    exit
+    printf "ERROR: NO INPUT .nii / .nii.gz FILES FOUND !!!!\n\n"
+    usage
   fi
 fi
 if [[ ! -d ${OUT_DIR} ]];then
-	echo "ERROR: NO OUTPUT FOLDER FOUND !!!!"
-  exit
+  printf "ERROR: NO OUTPUT FOLDER FOUND !!!!\n\n"
+  usage
 else
   if [ "$(ls -A $OUT_DIR)" ];then
-  	echo "ERROR: OUTPUT FOLDER IS NOT EMPTY !!!!"
+  	printf "ERROR: OUTPUT FOLDER IS NOT EMPTY !!!!\n\n"
+    printf "%s\n" $OUT_DIR
     ls -A $OUT_DIR
-    exit
+    printf "\n\n"
+    usage
   fi
 fi
 if [[ ! -d ${TMP_DIR} ]];then
-	echo "ERROR: NO TEMP FOLDER FOUND !!!!"
-  exit
+	printf "ERROR: NO TEMP FOLDER FOUND !!!!\n\n"
+  usage
 fi
 
 # Log to File
 LOG_FILE=$OUT_DIR/pipeline.log
 { 
 
-# List Parameters
+# List Parameters and Get Stack Slice Thickness
 echo -e "\n\n=== TRANSIT CHD Brain Structural Pipeline (Basic) ==============================\n\n"
-echo " - number of stacks : " $NUM_STACKS
-echo " - input stack slice thickness : " $STACK_SLICE_THICKNESS
+echo "  number of stacks : " $NUM_STACKS
+if [[ $DEFAULT_STACK_SLICE_THICKNESS -le 0 ]];then  # extract slice thickness from files if not provided as script input argument or invalid value
+  echo "  input stack slice thickness not provided or invalid..."
+  echo "      reading thickness of slices in each stack, assuming no slice gaps or overlap"
+  cd $IN_DIR
+  declare -i FILE_INDEX=0
+  for FILE in *.nii*
+    do
+      SLICE_THICKNESS=$(mirtk info $FILE | grep 'Voxel dimensions are' | awk -F '[ ]' '{print $6}')
+      ARRAY_STACK_SLICE_THICKNESS[$FILE_INDEX]=$(printf "%.1f" $SLICE_THICKNESS)
+      printf "          %-43s %6.1f mm\n" $FILE $SLICE_THICKNESS
+      FILE_INDEX+=1
+    done
+  DEFAULT_STACK_SLICE_THICKNESS=${ARRAY_STACK_SLICE_THICKNESS[0]}
+  for STACK_SLICE_THICKNESS in "${ARRAY_STACK_SLICE_THICKNESS[@]}"
+    do
+      if (( $(bc -l <<< "$DEFAULT_STACK_SLICE_THICKNESS != $STACK_SLICE_THICKNESS") ));then
+        echo "ERROR: INCONSISTENT STACK SLICE THICKNESS, AUTOMATED SVR SCRIPT ASSUMES SAME SLICE THICKNESS FOR ALL STACKS"
+        exit
+      fi
+    done
+fi
+echo "  default stack slice thickness : " $DEFAULT_STACK_SLICE_THICKNESS
 
 # Define Output Directories
 STACK_DIR=$OUT_DIR/01_stacks
@@ -127,7 +147,7 @@ done
 echo -e "\n\n=== 02 SVR =====================================================================\n\n"
 mkdir $SVR_DIR
 set -x
-bash /home/auto-proc-svrtk/scripts/auto-brain-reconstruction.sh $STACK_DIR $SVR_DIR $SVR_MOCO_MODE $STACK_SLICE_THICKNESS $SVR_VOL_RES $SVR_NUM_PKG
+bash /home/auto-proc-svrtk/scripts/auto-brain-reconstruction.sh $STACK_DIR $SVR_DIR $SVR_MOCO_MODE $DEFAULT_STACK_SLICE_THICKNESS $SVR_VOL_RES $SVR_NUM_PKG
 { set +x; } 2>/dev/null
 
 # Bias Correction on Reconstructed T2w Volume
