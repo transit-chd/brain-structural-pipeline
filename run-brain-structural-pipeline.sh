@@ -42,7 +42,7 @@ EOF
 # Set Defaults
 SVR_MOCO_MODE=0  # motion correction mode (see auto-brain-reconstruction.sh)
 SVR_NUM_PKG=1    # number of packages (see auto-brain-reconstruction.sh)
-SVR_VOL_RES=0.5  # spatial resolution of SVR volume 
+SVR_VOL_RES=0.8  # spatial resolution of SVR volume 
 SEG_VOL_RES=0.5  # spatial resolution of volume used for segmentation
 DEFAULT_STACK_SLICE_THICKNESS=0  # slice thickness of input stacks in millimeters
 
