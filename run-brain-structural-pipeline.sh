@@ -149,6 +149,34 @@ mkdir $SVR_DIR
 set -x
 bash /home/auto-proc-svrtk/scripts/auto-brain-reconstruction.sh $STACK_DIR $SVR_DIR $SVR_MOCO_MODE $DEFAULT_STACK_SLICE_THICKNESS $SVR_VOL_RES $SVR_NUM_PKG
 { set +x; } 2>/dev/null
+# Extract metrics from log file 
+metricstr=$(grep 'global metrics' $LOG_FILE | tail -1)
+ncc=$(echo $metricstr | grep -Eo 'ncc = [^;]*' | grep -Eo '[0-9]+\.[0-9]+')
+nrmse=$(echo $metricstr | grep -Eo 'nrmse = [^;]*' | grep -Eo '[0-9]+\.[0-9]+')
+averageweight=$(echo $metricstr | grep -Eo 'average weight = [^;]*' | grep -Eo '[0-9]+\.[0-9]+')
+excludedslices=$(echo $metricstr | grep -Eo 'excluded slices = [^;]*' | grep -Eo '[0-9]+\.[0-9]+')
+totalslices=$(grep slices: "$LOG_FILE" | tail -1 | grep -Eo '[0-9]+')
+excludedstacks1=$(grep -A 99 'Cropping stacks based on the input masks ... ' $LOG_FILE | grep -B 99 'Selection of the template and preliminary registrations based on the input masks ... ' | grep -c 'excluded because of the small/large mask ROI') || true # this command can fail when 0 matches; adding "|| true" seems to work with "set -e"
+excludedstacks2=$(grep -A 99 'Stack metrics' $LOG_FILE | grep -B 99 ' - selected template stack : ' | grep -c excluded) || true  # this command can fail when 0 matches; adding "|| true" seems to work with "set -e"
+excludedstacks=$(echo "$excludedstacks1 + $excludedstacks2" | bc)
+totalstacks=$(grep 'umber of stacks' "$LOG_FILE" | head -1 | grep -Eo '[0-9]+')
+stacksused=$(echo "$totalstacks - $excludedstacks" | bc)
+# Write metrics to file
+set -x
+filename_svr_metrics="metrics.txt"
+{ 
+    echo "NCC $ncc"
+    echo "NRMSE $nrmse"
+    echo "AverageWeight $averageweight"
+    echo "ExcludedSlices $excludedslices"
+    echo "TotalSlices $totalslices"
+    echo "StacksUsed $stacksused"
+    echo "ExcludedStacksDueToRoi $excludedstacks1"
+    echo "ExcludedStacksDueToMetrics $excludedstacks2"
+    echo "ExcludedStacks $excludedstacks"
+    echo "TotalStacks $totalstacks"
+} > "$SVR_DIR/$filename_svr_metrics"
+{ set +x; } 2>/dev/null
 
 # Bias Correction on Reconstructed T2w Volume
 echo -e "\n\n=== 03 Bias Correction on T2w Volume ===========================================\n\n"
