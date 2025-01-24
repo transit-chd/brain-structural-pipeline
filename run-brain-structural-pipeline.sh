@@ -197,7 +197,9 @@ declare -a orderedVals=(0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 
 mapfile -t inLabels < <(awk '{print $1}' "$SEG_DIR/$filename_volume_labels")
 mapfile -t inVals < <(awk '{print $2}' "$SEG_DIR/$filename_volume_labels")
 # Order values in array
-for i in $(seq 0 18);
+nlabels=${#inLabels[@]}
+n=$(echo "$nlabels - 1" | bc)
+for i in $(seq 0 "$n") 
 do
     X=${inLabels[$i]}-1
     orderedVals[$X]=${inVals[$i]}
